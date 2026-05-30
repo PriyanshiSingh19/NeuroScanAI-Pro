@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroScanAI Pro</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <!-- html2pdf -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- 🔥 LOADING OVERLAY -->
+    <div id="loading-overlay" class="loading-overlay" style="display:none;">
+        <div class="spinner"></div>
+        <p>Running Advanced AI Analysis...</p>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <h2>NeuroScanAI <span class="pro-badge">PRO</span></h2>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-view="dashboard-view">Dashboard</a>
+                <a href="#" class="nav-item" data-view="comparison-view">Comparison</a>
+                <a href="#" class="nav-item" data-view="history-view">Patient History</a>
+                <a href="#" class="nav-item" data-view="analytics-view">Advanced Analytics</a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>System Status: <span class="status-indicator"></span> Online</p>
+                <p class="version">v4.0.0 - Research Ed.</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <h1 id="page-title">AI Diagnostic Dashboard</h1>
+                <div class="user-profile">Dr. Smith (Lead Researcher)</div>
+            </header>
+
+            <!-- ================= DASHBOARD VIEW ================= -->
+            <div id="dashboard-view" class="view-section active-view">
+                <div class="content-grid">
+                    
+                    <!-- LEFT COLUMN -->
+                    <div class="left-col" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <!-- Upload & Preview Section -->
+                        <section class="panel upload-panel">
+                            <h3>MRI Scan Input</h3>
+                            <div class="upload-area" id="drop-zone">
+                                <input type="file" id="file-input" accept="image/*" hidden>
+                                <div class="upload-icon">📁</div>
+                                <p>Drag & Drop MRI image here</p>
+                                <p class="sub-text">or <span class="browse-link" onclick="document.getElementById('file-input').click()">browse files</span></p>
+                            </div>
+                            
+                            <div class="image-preview-container" style="display: none;" id="preview-container">
+                                <div class="preview-box">
+                                    <h4>Original Scan</h4>
+                                    <img id="image-preview" src="" alt="MRI Preview">
+                                </div>
+                                <div class="preview-box">
+                                    <h4>Grad-CAM Heatmap</h4>
+                                    <div class="heatmap-placeholder" id="heatmap-container">
+                                        <span>Awaiting Analysis...</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn-primary" id="analyze-btn" disabled>Run AI Analysis</button>
+                            <div class="error-msg" id="error-msg"></div>
+                        </section>
+
+                        <!-- Model Diagnostics -->
+                        <section class="panel diagnostics-panel">
+                            <h3>Model Diagnostics</h3>
+                            <div class="diag-grid">
+                                <div><span class="diag-label">Inference Time:</span> <strong id="diag-time">-- ms</strong></div>
+                                <div><span class="diag-label">Version:</span> <strong id="diag-version">--</strong></div>
+                                <div><span class="diag-label">Input Res:</span> <strong id="diag-res">--</strong></div>
+                                <div><span class="diag-label">Hardware:</span> <strong id="diag-hw">--</strong></div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- RIGHT COLUMN -->
+                    <div class="right-col results-layout">
+                        
+                        <!-- Prediction Card -->
+                        <section class="panel prediction-panel">
+                            <h3>Diagnostic Prediction</h3>
+                            <div class="prediction-result" id="pred-result-box">
+                                <h2 id="pred-class">--</h2>
+                                <div class="confidence-wrapper">
+                                    <span>Confidence:</span>
+                                    <span class="confidence-score" id="pred-confidence">--%</span>
+                                </div>
+                            </div>
+                            <div class="meta-stats">
+                                <div class="stat-box">
+                                    <span>Risk Level</span>
+                                    <strong id="pred-risk">--</strong>
+                                </div>
+                                <div class="stat-box">
+                                    <span>Severity</span>
+                                    <strong id="pred-severity">--</strong>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- AI Medical Report Panel -->
+                        <section class="panel report-panel">
+                            <div class="report-header" style="display:flex; justify-content:space-between; align-items:center;">
+                                <h3>AI Medical Report</h3>
+                                <button class="btn-sm" id="download-pdf-btn" disabled>Download PDF</button>
+                            </div>
+                            <div id="pdf-content-area" class="pdf-wrapper">
+                                <div class="insight-content">
+                                    <h4 style="margin-bottom:0.5rem; color:var(--primary);">Detailed Insights</h4>
+                                    <div id="ai-insight-text">Upload an MRI scan to generate detailed insights.</div>
+                                </div>
+                                <div style="display:flex; gap:1rem;">
+                                    <div style="flex:1;">
+                                        <h4>Risk Factors</h4>
+                                        <ul id="risk-factors" class="insight-list"><li>--</li></ul>
+                                    </div>
+                                    <div style="flex:1;">
+                                        <h4>Symptoms</h4>
+                                        <ul id="symptoms-list" class="insight-list"><li>--</li></ul>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 1rem;">
+                                    <h4>Recommended Actions & Tests</h4>
+                                    <ul id="next-steps" class="insight-list"><li>--</li></ul>
+                                </div>
+                                <div class="disclaimer">
+                                    ⚠️ For educational/demo purposes only. Not for clinical use.
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= COMPARISON VIEW ================= -->
+            <div id="comparison-view" class="view-section">
+                <section class="panel">
+                    <h3>Multi-Image Comparison</h3>
+                    <p style="color:var(--text-muted); margin-bottom: 1rem;">Upload two scans to compare predictions, confidence, and heatmaps side-by-side.</p>
+                    
+                    <div class="comparison-grid">
+                        <!-- Scan 1 -->
+                        <div class="compare-card">
+                            <input type="file" id="comp-file-1" accept="image/*" hidden>
+                            <button class="btn-secondary" onclick="document.getElementById('comp-file-1').click()">Upload Scan A</button>
+                            <img id="comp-img-1" style="display:none; width:100%; border-radius:8px; margin-top:1rem;">
+                            <button class="btn-primary" id="comp-btn-1" style="display:none; margin-top:1rem;">Analyze A</button>
+                            
+                            <div id="comp-res-1" class="comp-result" style="display:none; margin-top:1rem;">
+                                <h4 id="comp-pred-1" style="color:var(--primary); font-size:1.5rem;">--</h4>
+                                <p>Confidence: <strong id="comp-conf-1">--%</strong></p>
+                                <div id="comp-heat-1" style="margin-top:1rem;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Scan 2 -->
+                        <div class="compare-card">
+                            <input type="file" id="comp-file-2" accept="image/*" hidden>
+                            <button class="btn-secondary" onclick="document.getElementById('comp-file-2').click()">Upload Scan B</button>
+                            <img id="comp-img-2" style="display:none; width:100%; border-radius:8px; margin-top:1rem;">
+                            <button class="btn-primary" id="comp-btn-2" style="display:none; margin-top:1rem;">Analyze B</button>
+                            
+                            <div id="comp-res-2" class="comp-result" style="display:none; margin-top:1rem;">
+                                <h4 id="comp-pred-2" style="color:var(--primary); font-size:1.5rem;">--</h4>
+                                <p>Confidence: <strong id="comp-conf-2">--%</strong></p>
+                                <div id="comp-heat-2" style="margin-top:1rem;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ================= HISTORY VIEW ================= -->
+            <div id="history-view" class="view-section">
+                <section class="panel history-panel">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+                        <h3>Patient Scan History</h3>
+                        <div class="history-controls">
+                            <select id="hist-filter">
+                                <option value="all">All Tumor Types</option>
+                                <option value="Glioma">Glioma</option>
+                                <option value="Meningioma">Meningioma</option>
+                                <option value="Pituitary">Pituitary</option>
+                                <option value="None">None</option>
+                            </select>
+                            <select id="hist-sort">
+                                <option value="date-desc">Newest First</option>
+                                <option value="date-asc">Oldest First</option>
+                                <option value="conf-desc">Highest Confidence</option>
+                                <option value="conf-asc">Lowest Confidence</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Prediction</th>
+                                    <th>Confidence</th>
+                                    <th>Risk Level</th>
+                                    <th>Confidence Bar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <!-- Dynamically populated -->
+                                <tr><td colspan="5" style="text-align:center; padding: 2rem;">No history available.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button class="btn-secondary" id="clear-history-btn" style="margin-top: 1rem; width: auto;">Clear History</button>
+                </section>
+            </div>
+
+            <!-- ================= ANALYTICS VIEW ================= -->
+            <div id="analytics-view" class="view-section" style="overflow-x: auto;">
+                <div class="results-layout" style="padding-bottom: 1rem; width: 100%;">
+                    <!-- Advanced Metrics -->
+                    <section class="panel metrics-panel" style="grid-column: span 2;">
+                        <h3>Model Performance Metrics (Global)</h3>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="tooltip" data-tip="Percentage of correct predictions">Accuracy</span>
+                                <strong id="metric-accuracy">96.5%</strong>
+                            </div>
+                            <div class="metric-card">
+                                <span class="tooltip" data-tip="True Positives / (True Positives + False Positives)">Precision</span>
+                                <strong id="metric-precision">95.8%</strong>
+                            </div>
+                            <div class="metric-card">
+                                <span class="tooltip" data-tip="True Positives / (True Positives + False Negatives)">Recall</span>
+                                <strong id="metric-recall">97.1%</strong>
+                            </div>
+                            <div class="metric-card">
+                                <span class="tooltip" data-tip="Harmonic mean of Precision and Recall">F1 Score</span>
+                                <strong id="metric-f1">96.4%</strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Chart.js standard charts -->
+                    <section class="panel">
+                        <h3>Current Class Probabilities</h3>
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="probChart"></canvas>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <h3>Historical Tumor Distribution</h3>
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="distChart"></canvas>
+                        </div>
+                    </section>
+
+                    <!-- Plotly Advanced Charts -->
+                    <section class="panel" style="grid-column: span 2;">
+                        <h3>Confidence Distribution (Histogram & Box Plot)</h3>
+                        <div style="display:flex; gap:1rem;">
+                            <div id="plotly-hist" style="width:50%; height:300px;"></div>
+                            <div id="plotly-box" style="width:50%; height:300px;"></div>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <h3>Confusion Matrix (Heatmap)</h3>
+                        <div id="plotly-matrix" style="width:100%; height:300px;"></div>
+                    </section>
+
+                    <section class="panel">
+                        <h3>ROC Curve (Simulated)</h3>
+                        <div id="plotly-roc" style="width:100%; height:300px;"></div>
+                    </section>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

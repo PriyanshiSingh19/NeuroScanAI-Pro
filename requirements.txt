@@ -1,0 +1,7 @@
+Flask>=3.0.0
+torch
+torchvision
+Pillow>=10.0.1
+numpy>=1.26.0
+opencv-python-headless
+Werkzeug>=3.0.0
