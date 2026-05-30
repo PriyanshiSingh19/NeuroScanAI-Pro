@@ -54,12 +54,7 @@ Predicted category
 Confidence score
 Risk level
 Severity indicator
-
-to help users better understand model outputs.
-
 🔍 Explainable AI with Grad-CAM
-
-One of the core features of the project is model interpretability.
 
 Grad-CAM generates heatmaps that highlight image regions most influential in the model's prediction process.
 
@@ -76,9 +71,6 @@ Condition descriptions
 Risk information
 Suggested next steps
 General medical insights
-
-These insights are demonstration-oriented and not intended as professional medical advice.
-
 🗂️ Patient History Tracking
 
 The frontend stores previous analyses and allows users to review prediction history directly within the dashboard.
@@ -116,9 +108,6 @@ JSON API Response
         ↓
 Interactive Dashboard
 🧠 Model Architecture
-
-The application uses a ResNet50-based deep learning pipeline implemented with PyTorch.
-
 ResNet50
 
 ↓
@@ -199,7 +188,7 @@ pip install -r requirements.txt
 Run Application
 python app.py
 
-Open your browser and navigate to:
+Open:
 
 http://127.0.0.1:5000
 📊 Current Repository Status
